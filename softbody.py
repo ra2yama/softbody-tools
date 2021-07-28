@@ -120,7 +120,7 @@ def calc_muscles_by_proximity (cell_positions):
 
     return muscles
         
-    # for each cell, find the three cells that are nearest
+    # for each cell, find the nearest cells
     # then create a bond between each cell, as long as that bond doesn't already exist
 
 def is_same_connection (a, b):
@@ -129,7 +129,7 @@ def is_same_connection (a, b):
 def get_dist (a, b):
     return math.sqrt((b[0] - a[0])**2 + (b[1] - a[1])**2)
 
-# define max extension ???
+# TODO: define max extension ???
 
 def rect_positions(width, height, scale):
     ret = []

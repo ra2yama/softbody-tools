@@ -5,7 +5,7 @@ TIME_STEP = 1.0 / 60 # will not carry over into testbed
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 
 try:
-    from framework import (Framework, FrameworkBase, Keys, main)
+    from framework import (Framework, main)
 except:
     print("Unable to import TestBed Framework, so running in testbed will not work.")
 
@@ -13,6 +13,7 @@ class Environment: # OOP <3 ;(
     def __init__(self, world):
         self.world = world
         self.init_bodies(self.world)
+
     def init_bodies (self, world): # Must be implemented. This is where all world setup should occur.
         # Be careful to add things to local variable world rather than self.world.
         # It's only set up as a separate function to allow for the same objects to be added to arbritrary worlds,
