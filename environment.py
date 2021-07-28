@@ -18,7 +18,6 @@ class Environment: # OOP <3 ;(
         # Be careful to add things to local variable world rather than self.world.
         # It's only set up as a separate function to allow for the same objects to be added to arbritrary worlds,
         # such as when running the test bed.
-
         raise Exception("init_bodies must be implemented.")
     
     def tick(self, world): # An arbitrary tick function meant to work on different world, similar to init_bodies.
