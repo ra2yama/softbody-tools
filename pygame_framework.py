@@ -47,7 +47,8 @@ from framework import (FrameworkBase, Keys)
 from settings import fwSettings
 from Box2D import (b2DrawExtended, b2Vec2)
 
-try:
+# MODIFIED FROM ORIGINAL
+try: 
     from .pygame_gui import (fwGUI, gui)
     GUIEnabled = True
 except Exception as ex:
