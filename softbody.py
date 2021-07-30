@@ -7,7 +7,7 @@ class SoftBody:
     muscles = []
 
     # ideally, cell_positions would be a dict with proper ids to each cell so muscle connections could be more reliable
-    def __init__(self, pos, cell_positions, muscle_connections, cell_radius, world, intersecting=False, min_extension=1, max_extension=3):
+    def __init__(self, pos, cell_positions, muscle_connections, cell_radius, world, intersecting=False, min_extension=1.0, max_extension=3.0):
         self.min_extension = min_extension
         self.max_extension = max_extension
 
@@ -106,7 +106,8 @@ class SoftBody:
     def contract_muscle (self, index, length):
         for c in self.cells:
             c.awake = True
-        self.muscles[index].length = cap(length, self.min_extension, self.max_extension)
+        self.muscles[index].length = float(cap(length, self.min_extension, self.max_extension))
+        # self.muscles[index].length = length
     
     def destroy_all (self, world):
         for m in self.muscles:
@@ -119,6 +120,8 @@ def cap(v, min, max):
         return min
     elif v > max:
         return max
+    else:
+        return v
 
 def calc_muscles_by_proximity (cell_positions):
     modified = list(zip(cell_positions, range(len(cell_positions))))
