@@ -39,9 +39,12 @@ from __future__ import (print_function, absolute_import, division)
 import sys
 import warnings
 
-import pygame
-from pygame.locals import (QUIT, KEYDOWN, KEYUP, MOUSEBUTTONDOWN,
+try:
+    import pygame
+    from pygame.locals import (QUIT, KEYDOWN, KEYUP, MOUSEBUTTONDOWN,
                            MOUSEBUTTONUP, MOUSEMOTION, KMOD_LSHIFT)
+except Exception as e:
+    print("Pygame not available.")
 
 from .framework import (FrameworkBase, Keys)
 from .settings import fwSettings
