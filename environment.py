@@ -4,15 +4,17 @@
 TIME_STEP = 1.0 / 60 # will not carry over into testbed
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 
+from .framework import (Framework, main)
 try:
-    from framework import (Framework, main)
+    pass
 except:
     print("Unable to import TestBed Framework, so running in testbed will not work.")
 
 class Environment: # OOP <3 ;(
-    def __init__(self, world):
-        self.world = world
-        self.init_bodies(self.world)
+    def __init__(self, world, init_bodies=True): # kwargs should be passed along in implementations to avoide memory issues. (Otherwise data gets created twice in the same place.)
+        if init_bodies:
+            self.world = world
+            self.init_bodies(self.world)
 
     def init_bodies (self, world): # Must be implemented. This is where all world setup should occur.
         # Be careful to add things to local variable world rather than self.world.
@@ -30,14 +32,18 @@ class Environment: # OOP <3 ;(
         self.tick(self.world)
         self.world.Step(TIME_STEP, 10, 10)
 
-def RunTestbed(env_obj): # will not display env_obj as is, but rather reinitialize it.
+def RunTestbed(env_class): # must be given class, instead of instance
     class Sample(Framework):
         def __init__(self):
             super(Sample, self).__init__()
-            env_obj.init_bodies(self.world)
+            try:
+                self.env_obj = env_class(init_bodies=False)
+                self.env_obj.init_bodies(self.world)
+            except Exception as bruh:
+                print(bruh)
 
         def Step(self, settings):
-            env_obj.tick(self.world)
+            self.env_obj.tick(self.world)
             super(Sample, self).Step(settings)
 
     main(Sample)

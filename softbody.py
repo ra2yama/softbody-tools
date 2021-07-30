@@ -101,7 +101,7 @@ class SoftBody:
     def contract_muscle (self, index, length):
         for c in self.cells:
             c.awake = True
-        self.muscles[index].length += length
+        self.muscles[index].length = length
         
 
 def calc_muscles_by_proximity (cell_positions):

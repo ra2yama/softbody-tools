@@ -1,3 +1,6 @@
+# BROCKEN
+# pass class to runtestbed and kwargs with init
+
 import Box2D  # The main library
 from Box2D.b2 import (world, polygonShape, staticBody, dynamicBody, edgeShape, fixtureDef, circleShape)
 from environment import (Environment, RunTestbed)
