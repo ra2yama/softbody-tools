@@ -80,7 +80,7 @@ sliders = [
     {'name': 'positionIterations', 'text': 'Pos Iters', 'min': 0, 'max': 100},
     {'name': 'velocityIterations', 'text': 'Vel Iters', 'min': 1, 'max': 500},
 ]
-
+"""
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -112,3 +112,4 @@ for opt_name in list_options:
 
 
 fwSettings, args = parser.parse_args()
+"""
