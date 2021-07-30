@@ -7,12 +7,17 @@ class SoftBody:
     muscles = []
 
     # ideally, cell_positions would be a dict with proper ids to each cell so muscle connections could be more reliable
-    def __init__(self, pos, cell_positions, muscle_connections, cell_radius, world, intersecting=False):
-        self.fixture = b2FixtureDef(shape=b2CircleShape(radius=cell_radius), density=0.5, friction=1) 
+    def __init__(self, pos, cell_positions, muscle_connections, cell_radius, world, intersecting=False, min_extension=1, max_extension=3):
+        self.min_extension = min_extension
+        self.max_extension = max_extension
+
+        self.fixture = b2FixtureDef(shape=b2CircleShape(radius=cell_radius), density=0.5, friction=1.5) 
         if not intersecting:
             self.fixture.filter.groupIndex = -2 # collides with itself, but not other bodies
 
         self.cells = [world.CreateDynamicBody(position=(pos[0] + x, pos[1] + y), fixtures=self.fixture, fixedRotation=True) for x, y in cell_positions]
+
+        self.world = world
 
         # for c in self.cells:
         #     f = c.fixtures[0]
@@ -101,8 +106,19 @@ class SoftBody:
     def contract_muscle (self, index, length):
         for c in self.cells:
             c.awake = True
-        self.muscles[index].length = length
+        self.muscles[index].length = cap(length, self.min_extension, self.max_extension)
+    
+    def destroy_all (self, world):
+        for m in self.muscles:
+            world.DestroyJoint(m)
+        for i in range(len(self.muscles))[::-1]: # THIS !!! Only thing that worked to get rid of memory
+            del self.muscles[i]
         
+def cap(v, min, max):
+    if v < min:
+        return min
+    elif v > max:
+        return max
 
 def calc_muscles_by_proximity (cell_positions):
     modified = list(zip(cell_positions, range(len(cell_positions))))
