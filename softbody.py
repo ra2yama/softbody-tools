@@ -35,6 +35,8 @@ class SoftBody:
             
             self.muscles.append(world.CreateJoint(dfn))
         
+        self.initial_lengths = self.get_extensions()
+        
         print("New Softbody with {} masses and {} springs".format(len(cell_positions), len(muscle_connections)))
     
     def new_from_points(pos, cell_positions, cell_size, world, intersecting=False):
@@ -108,6 +110,18 @@ class SoftBody:
             c.awake = True
         self.muscles[index].length = float(cap(length, self.min_extension, self.max_extension))
         # self.muscles[index].length = length
+
+    def contract_relative (self, index, length):
+        for c in self.cells:
+            c.awake = True
+        new = self.muscles[index].length + length
+        self.muscles[index].length = float(cap(new, self.min_extension, self.max_extension))
+
+    def get_extensions (self):
+        return [m.length for m in self.muscles]
+    
+    def muscle_distances_from_initial(self):
+        return [final - initial for (final, initial) in zip(self.get_extensions(), self.initial_lengths)]
     
     def destroy_all (self, world):
         for m in self.muscles:
