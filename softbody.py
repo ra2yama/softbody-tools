@@ -7,7 +7,7 @@ class SoftBody:
     muscles = []
 
     # ideally, cell_positions would be a dict with proper ids to each cell so muscle connections could be more reliable
-    def __init__(self, pos, cell_positions, muscle_connections, cell_radius, world, intersecting=False, min_extension=1.0, max_extension=3.0):
+    def __init__(self, pos, cell_positions, muscle_connections, cell_radius, world, muscle_groups, intersecting=False, min_extension=0.5, max_extension=3.0):
         self.min_extension = min_extension
         self.max_extension = max_extension
 
@@ -34,15 +34,20 @@ class SoftBody:
             )
             
             self.muscles.append(world.CreateJoint(dfn))
+
+        self.muscle_groups = muscle_groups
+
+        if self.muscle_groups:
+            self.muscle_group_extensions = [0 for _ in range(len(self.muscle_groups))] # initial extensions are all 0
         
         self.initial_lengths = self.get_extensions()
         
         print("New Softbody with {} masses and {} springs".format(len(cell_positions), len(muscle_connections)))
     
     def new_from_points(pos, cell_positions, cell_size, world, intersecting=False):
-        return SoftBody(pos, cell_positions, calc_muscles_by_proximity(cell_positions), cell_size, world, intersecting=intersecting)
+        return SoftBody(pos, cell_positions, calc_muscles_by_proximity(cell_positions), cell_size, world, None, intersecting=intersecting)
     
-    def new_as_voxel(base_pos, matrix, cell_size, cell_radius, world, intersecting=False): # matrix: 2D Array
+    def new_as_voxel(base_pos, matrix, cell_size, cell_radius, world, separate_perimeter=False, intersecting=False): # matrix: 2D Array
         # fill out a dict of positions
         # for each cell, try to find in the dict the coords of each point
         # if it exists, use it, else add it
@@ -53,6 +58,8 @@ class SoftBody:
         cells = {} # {(float x, float y) : int id}
         connections = {} # {(int id_a, int id_b) : int ???? _ it's not going to be used } # dict for instant lookup only
         index = 0
+        muscle_index = 0
+        muscle_groups = []
 
         for i in range(len(matrix)): # index matrix by [x][y]
             for j in range(len(matrix[i])):
@@ -86,20 +93,41 @@ class SoftBody:
                     (bottom_left, top_left),
                 ]
 
+                temp = []
+
                 for c in cell_connections: # same number of operations as checking before setting
-                    connections[c] = 1 # although I'm not sure if it's worse to get or set memory
-        
+                    if not (c in connections):
+                        print(muscle_index)
+                        connections[c] = muscle_index
+                        temp += [muscle_index]
+                        muscle_index += 1
+                    else:
+                        print("hmm")
+
+                muscle_groups += [temp]
+                # save index
+
         for (x, y), i in cells.items(): # perimeter
             transformations = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
             for a, b in transformations:
                 other = (x + (a * cell_size), y + (b * cell_size))
-                if other in cells:
-                    connections[(i, cells[other])] = 1
-               
-        cell_positions = [p for p, _ in sorted(cells.items(), key=lambda a: a[1])] # turn to list of tuples and sort by index
-        ret_connections = [((cell_positions[a], a), (cell_positions[b], b)) for a, b in connections.keys()] # sort of unnecessary
+                if (other in cells):
+                    c = (i, cells[other])
+                    if (not c in connections):
+                        connections[c] = muscle_index
+                        muscle_index += 1
 
-        return SoftBody(base_pos, cell_positions, ret_connections, cell_radius, world, intersecting=intersecting)
+        print(muscle_groups)
+
+        sorted_connections = sorted(connections.items(), key=lambda a: a[1])
+        print(sorted_connections)
+
+        cell_positions = [p for p, _ in sorted(cells.items(), key=lambda a: a[1])] # turn to list of tuples and sort by index
+        ret_connections = [((cell_positions[a], a), (cell_positions[b], b)) for (a, b), i in sorted_connections] # sort of unnecessary
+
+        # get connections as list and sort by index
+
+        return SoftBody(base_pos, cell_positions, ret_connections, cell_radius, world, muscle_groups, intersecting=intersecting)
     
     def contract_muscles (self, muscles_indeces, length):
         for index in muscles_indeces:
@@ -122,6 +150,14 @@ class SoftBody:
     
     def muscle_distances_from_initial(self):
         return [final - initial for (final, initial) in zip(self.get_extensions(), self.initial_lengths)]
+    
+    def contract_muscle_group(self, index, amount):
+        new = self.muscle_group_extensions[index] + amount
+        capped = float(cap(new, self.min_extension, self.max_extension))
+        self.muscle_group_extensions[index] = capped
+
+        for i in self.muscle_groups[index]:
+            self.muscles[i].length = capped
     
     def destroy_all (self, world):
         for m in self.muscles:
