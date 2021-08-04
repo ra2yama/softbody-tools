@@ -42,7 +42,7 @@ class SoftBody:
         
         self.initial_lengths = self.get_extensions()
         
-        print("New Softbody with {} masses and {} springs".format(len(cell_positions), len(muscle_connections)))
+        print("New Softbody with {}, masses, {} springs, and {} muscle groups".format(len(cell_positions), len(muscle_connections), len(self.muscle_groups)))
     
     def new_from_points(pos, cell_positions, cell_size, world, intersecting=False):
         return SoftBody(pos, cell_positions, calc_muscles_by_proximity(cell_positions), cell_size, world, None, intersecting=intersecting)
@@ -97,12 +97,9 @@ class SoftBody:
 
                 for c in cell_connections: # same number of operations as checking before setting
                     if not (c in connections):
-                        print(muscle_index)
                         connections[c] = muscle_index
                         temp += [muscle_index]
                         muscle_index += 1
-                    else:
-                        print("hmm")
 
                 muscle_groups += [temp]
                 # save index
@@ -117,10 +114,10 @@ class SoftBody:
                         connections[c] = muscle_index
                         muscle_index += 1
 
-        print(muscle_groups)
+        # print(muscle_groups)
 
         sorted_connections = sorted(connections.items(), key=lambda a: a[1])
-        print(sorted_connections)
+        # print(sorted_connections)
 
         cell_positions = [p for p, _ in sorted(cells.items(), key=lambda a: a[1])] # turn to list of tuples and sort by index
         ret_connections = [((cell_positions[a], a), (cell_positions[b], b)) for (a, b), i in sorted_connections] # sort of unnecessary
